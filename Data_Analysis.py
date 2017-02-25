@@ -20,6 +20,7 @@ print 'The dataset consists of: \n {} listings \n {} features for each listing \
 
 
 # Question 2
+
 # TODO: Generate scatter plot for the houses square footage vs the listing prices
 
 # Get sqft and listing_prices data from dataset
@@ -86,6 +87,11 @@ plt.savefig("TwinCities_real_estate_polynomial_regression.jpg", dpi=300)
 plt.close()
 
 print 'The listing price for a 2111 square foot house is ${}'.format(best_estimator.predict(2111))
+
+
+
+
+
 
 
 
