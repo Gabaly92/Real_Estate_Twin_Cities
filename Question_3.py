@@ -16,16 +16,59 @@ dataset = dataset.drop('LastSaleDate', axis=1)
 dataset['age'] = 2014 - dataset['YearBuilt']
 dataset_dimensions = dataset.shape
 print 'The dataset consists of: \n {} listings \n {} features for each listing \n'.format(dataset_dimensions[0], dataset_dimensions[1])
+print dataset.describe()
 
-print 'The descriptive statistics for the numerical values in the dataset are as follows: \n {}'.format(dataset.describe())
-# Get data between the 25th percentile and 75th percentile
-ListPrice_25 = dataset.ListPrice.quantile(0.25)
-ListPrice_75 = dataset.ListPrice.quantile(0.75)
+# Pick the Features that will be used for the classification
+features = {'ListPrice': dataset['ListPrice'], 'BEDS': dataset['BEDS'], 'BATHS': dataset['BATHS'], 'SQFT': dataset['SQFT'], 'age': dataset['age'], 'SoldPrev': dataset['SoldPrev'],
+            'ZIP': dataset['ZIP']}
+dataset_new = pd.DataFrame(features)
+
+# Get training set from datase_new, it will include all zips
+ListPrice_25 = dataset_new.ListPrice.quantile(0.25)
+ListPrice_75 = dataset_new.ListPrice.quantile(0.75)
+
+train = dataset_new[((dataset_new.ListPrice > ListPrice_25) & (dataset_new.ListPrice < ListPrice_75)) & ((dataset_new.ZIP != 55104) & (dataset_new.ZIP != 55108))]
+
+train_x = train.drop(['ZIP','SoldPrev',], axis=1)
+train_y = train['SoldPrev']
+print type(train_y)
+train_y = train_y.replace(['Y', 'N'], [1, 0])
+
+# Get data between the 25th percentile and 75th percentile and in ZIPS 55104 55108
 
 
-ListPrice_bet2575_andbyzip = dataset[((dataset.ListPrice > ListPrice_25) & (dataset.ListPrice < ListPrice_75)) & ((dataset.ZIP == 55104) | (dataset.ZIP == 55108))]
-ListPrice_zip = dataset[(dataset.ZIP == 55104) | (dataset.ZIP == 55108)]
+zip104 = dataset_new[((dataset_new.ListPrice > ListPrice_25) & (dataset_new.ListPrice < ListPrice_75)) & (dataset_new.ZIP == 55104)]
+zip104 = zip104.drop(['ZIP', 'SoldPrev'], axis=1)
+print 'Zip 55104 test set \n'
+print zip104.columns.values
+print zip104.describe()
 
-print ListPrice_bet2575_andbyzip.shape
-print ListPrice_zip.shape
+zip108 = dataset_new[((dataset_new.ListPrice > ListPrice_25) & (dataset_new.ListPrice < ListPrice_75)) & (dataset_new.ZIP == 55108)]
+zip108 = zip108.drop(['ZIP', 'SoldPrev'], axis=1)
+print 'Zip 55108 test set \n'
+print zip108.columns.values
+print zip108.describe(), '\n'
+
+# get 10 random values from zip 55104 to make a fair test
+zip104 = zip104.sample(10)
+
+print 'Zip 55104 10 samples description', zip104.describe()
+
+# Train Random Forest on the training set
+rfc = RandomForestClassifier(n_estimators= 50)
+rfc.fit(train_x, train_y)
+
+# Predict Selling for the two zip codes
+zip104_pred = rfc.predict(zip104)
+print 'predictions for zip 55104 \n {}'.format(zip104_pred)
+
+zip108_pred = rfc.predict(zip108)
+print 'predictions for zip 55108 \n {}'.format(zip108_pred)
+
+
+
+
+
+
+
 
